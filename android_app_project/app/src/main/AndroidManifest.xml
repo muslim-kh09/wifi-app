@@ -9,20 +9,29 @@
     <!-- WiFi transport detection (ConnectivityChecker.isWifiConnected) -->
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
 
+    <!-- ── Notifications (runtime permission on API 33+) ─────────────────── -->
+    <!--
+        POST_NOTIFICATIONS became a runtime permission in Android 13 (API 33).
+        MainActivity requests it at runtime before starting the foreground service.
+    -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
     <!-- ── Foreground Service ────────────────────────────────────────────── -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <!--
-        API 34+: typed permission required for foregroundServiceType="connectedDevice".
-        Harmless on lower API levels.
+        FOREGROUND_SERVICE_DATA_SYNC pairs with foregroundServiceType="dataSync".
+        Unlike connectedDevice, dataSync has NO hardware-connection precondition,
+        so it works on any device regardless of Bluetooth/USB/NFC state.
+        Required on API 34+; harmless on lower API levels.
     -->
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_CONNECTED_DEVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
 
     <!-- ── APK Auto-Update ───────────────────────────────────────────────── -->
     <!-- Allows the system package installer to be invoked for downloaded APKs -->
     <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
     <!--
         Needed to write the downloaded APK to getExternalFilesDir().
-        maxSdkVersion="28": Android 10+ (API 29) no longer requires this for app-private dirs.
+        maxSdkVersion="28": Android 10+ (API 29) does not require this for app-private dirs.
     -->
     <uses-permission
         android:name="android.permission.WRITE_EXTERNAL_STORAGE"
@@ -42,7 +51,7 @@
             <action android:name="android.intent.action.VIEW" />
             <data android:scheme="https" />
         </intent>
-        <!-- Needed so the system can find the package installer -->
+        <!-- Needed so the system can resolve the package installer -->
         <intent>
             <action android:name="android.intent.action.INSTALL_PACKAGE" />
         </intent>
@@ -52,7 +61,7 @@
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher"
         android:roundIcon="@drawable/ic_launcher"
-        android:label="تطبيق واي فاي"
+        android:label="Khaled-CLI"
         android:supportsRtl="true"
         android:usesCleartextTraffic="true">
 
@@ -72,20 +81,21 @@
 
         <!-- ── Foreground Service ─────────────────────────────────────────── -->
         <!--
-            foregroundServiceType="connectedDevice":
-              - Correct type for a service that maintains a network/WiFi connection.
-              - Pairs with FOREGROUND_SERVICE_CONNECTED_DEVICE permission (API 34+).
-              - On API 29-33 the type is informational; on API 34 it is enforced.
+            foregroundServiceType="dataSync":
+              - Appropriate for services that communicate with a remote server.
+              - No hardware-connection precondition (unlike connectedDevice).
+              - Pairs with FOREGROUND_SERVICE_DATA_SYNC permission (enforced API 34+).
+              - The matching ServiceInfo constant is used in startForeground() on API 29+.
         -->
         <service
             android:name=".WifiService"
             android:exported="false"
-            android:foregroundServiceType="connectedDevice" />
+            android:foregroundServiceType="dataSync" />
 
         <!-- ── FileProvider for APK install on API 24+ ────────────────────── -->
         <!--
             Generates a content:// URI for the downloaded APK so the system
-            package installer can read it without needing MANAGE_EXTERNAL_STORAGE.
+            package installer can read it without MANAGE_EXTERNAL_STORAGE.
             The authority must match FILE_PROVIDER_AUTHORITY in UpdateChecker.
         -->
         <provider

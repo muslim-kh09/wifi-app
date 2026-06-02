@@ -25,8 +25,10 @@ import androidx.core.app.NotificationCompat;
  *   - IMPORTANCE_LOW → silent channel (no sound / vibration)
  *   - setOngoing(true) → non-swipeable
  *   - START_STICKY → OS will restart the service if it is killed
- *   - On API 29+ startForeground() receives the typed service info
- *   - On API 34  FOREGROUND_SERVICE_CONNECTED_DEVICE permission is declared in manifest
+ *   - foregroundServiceType = dataSync (declared in manifest + permission).
+ *     'connectedDevice' was rejected because it requires an active Bluetooth/USB/NFC
+ *     link and throws InvalidForegroundServiceTypeException on Android 14+ without one.
+ *   - startForeground() passes the typed constant on API 29+ to match the manifest.
  */
 public class WifiService extends Service {
 
@@ -44,9 +46,10 @@ public class WifiService extends Service {
         Notification notification = buildNotification();
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            // API 29+: must declare service type to match the manifest attribute
+            // API 29+: pass the typed constant that matches the manifest's
+            // foregroundServiceType="dataSync" attribute.
             startForeground(NOTIFICATION_ID, notification,
-                    ServiceInfo.FOREGROUND_SERVICE_TYPE_CONNECTED_DEVICE);
+                    ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC);
         } else {
             startForeground(NOTIFICATION_ID, notification);
         }
