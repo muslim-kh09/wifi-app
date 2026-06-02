@@ -49,6 +49,18 @@ jobs:
         run: echo "sdk.dir=$ANDROID_HOME" > local.properties
         working-directory: android_app_project
 
+      # FIX (Bug 3): gradle.properties must declare android.useAndroidX=true.
+      # Without it, AGP 8.x fails at :checkDebugAarMetadata when it detects any
+      # androidx.* dependency (including our androidx.browser:browser:1.8.0) and
+      # refuses to proceed. This was the root cause of the latest build failure.
+      - name: Create gradle.properties
+        run: |
+          echo "android.useAndroidX=true"   > gradle.properties
+          echo "android.enableJetifier=false" >> gradle.properties
+          echo "org.gradle.jvmargs=-Xmx2048m -Dfile.encoding=UTF-8" >> gradle.properties
+          echo "org.gradle.parallel=true" >> gradle.properties
+        working-directory: android_app_project
+
       # Now that `gradle` is on PATH (step 3), generate the Gradle wrapper.
       # The wrapper (gradlew) is what the next step actually executes.
       - name: Generate Gradle Wrapper
