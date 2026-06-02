@@ -85,7 +85,7 @@ public class ConnectivityChecker {
             // ── Step 2: Localhost fallback — only if Step 1 did not resolve ──
             if (resolvedUrl == null) {
                 if (isReachable(LOCALHOST_URL, 2000)) {
-                    resolvedUrl = LOCALHOST_URL;
+                    resolvedUrl = "http://127.0.0.1:8080/index.php?clientmac=06%3Aff%3A89%3A94%3Ae0%3Ada&tok=1&redir=google.com";
                 }
             }
 
