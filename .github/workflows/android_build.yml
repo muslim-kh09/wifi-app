@@ -1,8 +1,15 @@
-name: Android Build
+name: Android Build & Release
 
 on:
   push:
     branches: [ main, master ]
+    # 1. إضافة مراقبة العلامات (Tags)
+    tags:
+      - 'v*'
+
+# 2. إعطاء الصلاحية لإنشاء إصدار جديد في المستودع
+permissions:
+  contents: write
 
 jobs:
   build:
@@ -14,8 +21,6 @@ jobs:
         uses: actions/checkout@v4
 
       # ── 2. Java Runtime ───────────────────────────────────────────────────
-      # AGP 8.x requires JDK 17 as a hard minimum. Temurin is the recommended
-      # OpenJDK distribution for CI (Eclipse Adoptium, fully free & LTS).
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
@@ -23,36 +28,20 @@ jobs:
           java-version: '17'
 
       # ── 3. Gradle Toolchain ───────────────────────────────────────────────
-      # FIX (Bug 1): ubuntu-latest does NOT ship with Gradle pre-installed.
-      # This action installs Gradle 8.2 (compatible with AGP 8.2.0), puts
-      # the `gradle` binary on PATH, and enables automatic dependency caching
-      # so androidx.browser and all transitive deps are not re-downloaded on
-      # every run.
       - name: Setup Gradle 8.2
         uses: gradle/actions/setup-gradle@v3
         with:
           gradle-version: '8.2'
 
       # ── 4. Project Scaffolding ─────────────────────────────────────────────
-      # settings.gradle is not committed to the repo, so we generate it.
-      # Simple `include ':app'` is correct for this project's old-style
-      # buildscript {} / allprojects {} layout (no settings plugin block needed).
       - name: Create Missing settings.gradle
         run: echo "include ':app'" > settings.gradle
         working-directory: android_app_project
 
-      # FIX (Bug 2): The Android SDK is pre-installed on ubuntu-latest at
-      # $ANDROID_HOME, but Gradle cannot find it without local.properties.
-      # Without this file, the build fails instantly with:
-      #   "SDK location not found. Define a valid SDK location with an sdk.dir"
       - name: Create local.properties
         run: echo "sdk.dir=$ANDROID_HOME" > local.properties
         working-directory: android_app_project
 
-      # FIX (Bug 3): gradle.properties must declare android.useAndroidX=true.
-      # Without it, AGP 8.x fails at :checkDebugAarMetadata when it detects any
-      # androidx.* dependency (including our androidx.browser:browser:1.8.0) and
-      # refuses to proceed. This was the root cause of the latest build failure.
       - name: Create gradle.properties
         run: |
           echo "android.useAndroidX=true"   > gradle.properties
@@ -61,15 +50,11 @@ jobs:
           echo "org.gradle.parallel=true" >> gradle.properties
         working-directory: android_app_project
 
-      # Now that `gradle` is on PATH (step 3), generate the Gradle wrapper.
-      # The wrapper (gradlew) is what the next step actually executes.
       - name: Generate Gradle Wrapper
         run: gradle wrapper --gradle-version 8.2
         working-directory: android_app_project
 
       # ── 5. Compile ─────────────────────────────────────────────────────────
-      # Assembles the debug APK. This resolves androidx.browser:browser:1.8.0
-      # from google() + mavenCentral() declared in the root build.gradle.
       - name: Build Debug APK
         run: ./gradlew :app:assembleDebug
         working-directory: android_app_project
@@ -80,3 +65,11 @@ jobs:
         with:
           name: app-debug
           path: android_app_project/app/build/outputs/apk/debug/app-debug.apk
+
+      # ── 7. Create Release & Upload APK (NEW STEP) ──────────────────────────
+      - name: Create GitHub Release and Upload APK
+        uses: softprops/action-gh-release@v2
+        # هذا الشرط يضمن عدم إنشاء إصدار إلا إذا كان الرفع عبارة عن Tag يبدأ بـ v
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: android_app_project/app/build/outputs/apk/debug/app-debug.apk
