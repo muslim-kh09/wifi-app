@@ -18,12 +18,17 @@ jobs:
         distribution: 'temurin'
         java-version: '17'
 
+    # خطوة جديدة لإنشاء الملف الناقص تلقائياً على السيرفر
+    - name: Create Missing settings.gradle
+      run: echo "include ':app'" > settings.gradle
+      working-directory: android_app_project
+
     - name: Generate Gradle Wrapper on Server
       run: gradle wrapper --gradle-version 8.2
       working-directory: android_app_project
 
     - name: Build APK
-      run: ./gradlew assembleDebug
+      run: ./gradlew :app:assembleDebug
       working-directory: android_app_project
 
     - name: Upload APK Artifact
