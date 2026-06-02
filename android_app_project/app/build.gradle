@@ -27,5 +27,6 @@ android {
 }
 
 dependencies {
-    // No external dependencies needed for this implementation
+    // AndroidX Browser — provides Custom Tabs API (backwards compatible to API 21)
+    implementation 'androidx.browser:browser:1.8.0'
 }

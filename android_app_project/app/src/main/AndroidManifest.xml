@@ -5,6 +5,23 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
+    <!--
+        Android 11+ (API 30) Package Visibility:
+        Without this block, PackageManager.queryIntentActivities() returns an empty list,
+        so our Custom Tabs browser-detection probe would always fail silently.
+        Declaring the http/https scheme here tells the OS we need to enumerate browsers.
+    -->
+    <queries>
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:scheme="http" />
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:scheme="https" />
+        </intent>
+    </queries>
+
     <application
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher"
@@ -12,10 +29,14 @@
         android:label="Khaled-CLI Media"
         android:supportsRtl="true"
         android:usesCleartextTraffic="true">
+
+        <!--
+            Theme.NoTitleBar removed — MainActivity finishes immediately after
+            launching the Custom Tab, so it is never visible to the user.
+        -->
         <activity
             android:name=".MainActivity"
-            android:exported="true"
-            android:theme="@android:style/Theme.NoTitleBar">
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
