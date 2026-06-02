@@ -18,8 +18,9 @@ jobs:
         distribution: 'temurin'
         java-version: '17'
 
-    - name: Setup Gradle
-      uses: gradle/actions/setup-gradle@v3
+    - name: Generate Gradle Wrapper on Server
+      run: gradle wrapper --gradle-version 8.2
+      working-directory: android_app_project
 
     - name: Build APK
       run: ./gradlew assembleDebug
