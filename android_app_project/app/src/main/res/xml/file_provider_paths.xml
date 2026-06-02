@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    FileProvider path configuration.
+
+    Maps getExternalFilesDir(null) — the directory where DownloadManager saves
+    the APK — so FileProvider can produce a valid content:// URI for the
+    system package installer on API 24+ devices.
+
+    Corresponds to the <provider> authority:  com.khaledcli.wifimedia.fileprovider
+-->
+<paths>
+    <external-files-path
+        name="apk_downloads"
+        path="." />
+</paths>

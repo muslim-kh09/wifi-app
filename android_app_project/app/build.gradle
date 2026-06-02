@@ -10,8 +10,16 @@ android {
         applicationId "com.khaledcli.wifimedia"
         minSdk 21
         targetSdk 34
-        versionCode 1
-        versionName "1.0"
+        versionCode 2        // Bumped from 1 → 2 for v1.1
+        versionName "1.1"    // Bumped from 1.0 → 1.1
+
+        // Expose versionName to Java via BuildConfig.VERSION_NAME
+        // (used by UpdateChecker for version comparison)
+        buildConfigField "String", "VERSION_NAME", "\"${versionName}\""
+    }
+
+    buildFeatures {
+        buildConfig true      // Ensure BuildConfig class is generated
     }
 
     buildTypes {
@@ -20,6 +28,7 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
+
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
@@ -27,6 +36,10 @@ android {
 }
 
 dependencies {
-    // AndroidX Browser — provides Custom Tabs API (backwards compatible to API 21)
+    // AndroidX Browser — provides Custom Tabs API (backwards compatible to API 21).
+    // Transitively includes androidx.core, which provides:
+    //   - NotificationCompat  (used by WifiService)
+    //   - FileProvider        (used by UpdateChecker)
+    //   - ContextCompat       (used by ConnectivityChecker)
     implementation 'androidx.browser:browser:1.8.0'
 }

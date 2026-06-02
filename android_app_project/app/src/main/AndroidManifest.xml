@@ -2,14 +2,36 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.khaledcli.wifimedia">
 
+    <!-- ── Core network ──────────────────────────────────────────────────── -->
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+
+    <!-- WiFi transport detection (ConnectivityChecker.isWifiConnected) -->
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+
+    <!-- ── Foreground Service ────────────────────────────────────────────── -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <!--
+        API 34+: typed permission required for foregroundServiceType="connectedDevice".
+        Harmless on lower API levels.
+    -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_CONNECTED_DEVICE" />
+
+    <!-- ── APK Auto-Update ───────────────────────────────────────────────── -->
+    <!-- Allows the system package installer to be invoked for downloaded APKs -->
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
+    <!--
+        Needed to write the downloaded APK to getExternalFilesDir().
+        maxSdkVersion="28": Android 10+ (API 29) no longer requires this for app-private dirs.
+    -->
+    <uses-permission
+        android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+        android:maxSdkVersion="28" />
 
     <!--
         Android 11+ (API 30) Package Visibility:
         Without this block, PackageManager.queryIntentActivities() returns an empty list,
-        so our Custom Tabs browser-detection probe would always fail silently.
-        Declaring the http/https scheme here tells the OS we need to enumerate browsers.
+        causing the Custom Tabs browser-detection probe to fail silently.
     -->
     <queries>
         <intent>
@@ -20,28 +42,62 @@
             <action android:name="android.intent.action.VIEW" />
             <data android:scheme="https" />
         </intent>
+        <!-- Needed so the system can find the package installer -->
+        <intent>
+            <action android:name="android.intent.action.INSTALL_PACKAGE" />
+        </intent>
     </queries>
 
     <application
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher"
         android:roundIcon="@drawable/ic_launcher"
-        android:label="Khaled-CLI Media"
+        android:label="تطبيق واي فاي"
         android:supportsRtl="true"
         android:usesCleartextTraffic="true">
 
         <!--
-            Theme.NoTitleBar removed — MainActivity finishes immediately after
-            launching the Custom Tab, so it is never visible to the user.
+            launchMode="singleTop": tapping the notification brings MainActivity
+            to the front via onNewIntent() instead of creating a new instance.
         -->
         <activity
             android:name=".MainActivity"
-            android:exported="true">
+            android:exported="true"
+            android:launchMode="singleTop">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <!-- ── Foreground Service ─────────────────────────────────────────── -->
+        <!--
+            foregroundServiceType="connectedDevice":
+              - Correct type for a service that maintains a network/WiFi connection.
+              - Pairs with FOREGROUND_SERVICE_CONNECTED_DEVICE permission (API 34+).
+              - On API 29-33 the type is informational; on API 34 it is enforced.
+        -->
+        <service
+            android:name=".WifiService"
+            android:exported="false"
+            android:foregroundServiceType="connectedDevice" />
+
+        <!-- ── FileProvider for APK install on API 24+ ────────────────────── -->
+        <!--
+            Generates a content:// URI for the downloaded APK so the system
+            package installer can read it without needing MANAGE_EXTERNAL_STORAGE.
+            The authority must match FILE_PROVIDER_AUTHORITY in UpdateChecker.
+        -->
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="com.khaledcli.wifimedia.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_provider_paths" />
+        </provider>
+
     </application>
 
 </manifest>

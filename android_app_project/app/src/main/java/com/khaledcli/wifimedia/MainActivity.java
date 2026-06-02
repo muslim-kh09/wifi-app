@@ -1,98 +1,59 @@
 package com.khaledcli.wifimedia;
 
 import android.app.Activity;
-import android.content.Context;
-import android.net.ConnectivityManager;
-import android.net.LinkProperties;
-import android.net.Network;
-import android.net.RouteInfo;
+import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
-import android.widget.Toast;
 
-import java.net.DatagramSocket;
-import java.net.Inet4Address;
-import java.net.InetAddress;
-import java.net.InterfaceAddress;
-import java.net.NetworkInterface;
-
+/**
+ * Application entry point.
+ *
+ * onCreate() orchestrates three independent tasks:
+ *
+ *  1. Start WifiService (foreground service — persistent notification).
+ *     Must be called first so the notification appears immediately.
+ *
+ *  2. ConnectivityChecker.check() — background thread:
+ *       WiFi gateway → localhost fallback → Arabic error dialog.
+ *       Calls finish() on success or after the user dismisses the error.
+ *
+ *  3. UpdateChecker.check() — separate background thread (runs in parallel):
+ *       GitHub Releases API → version compare → download → install.
+ *       Non-blocking; does not delay the portal launch.
+ *
+ * The Activity no longer calls finish() itself; ConnectivityChecker
+ * does so after it has resolved the URL or shown the error dialog.
+ */
 public class MainActivity extends Activity {
+
+    private UpdateChecker updateChecker;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // Resolve the captive portal gateway IP dynamically
-        String gatewayIp = getGatewayIp();
-
-        if (gatewayIp != null && !gatewayIp.isEmpty()) {
-            String url = "http://" + gatewayIp + ":8080";
-
-            // Read the brand accent color from colors.xml (#3b82f6)
-            int toolbarColor = getResources().getColor(R.color.icon_accent, null);
-
-            // Launch via Custom Tabs (real browser session → real fingerprint)
-            // Falls back automatically to ACTION_VIEW if no Custom-Tabs browser found
-            CustomTabsHelper.openUrl(this, url, toolbarColor);
+        // ── 1. Foreground service ─────────────────────────────────────────────
+        Intent serviceIntent = new Intent(this, WifiService.class);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            startForegroundService(serviceIntent); // API 26+: mandatory for foreground services
         } else {
-            Toast.makeText(this, "Could not determine Gateway IP", Toast.LENGTH_LONG).show();
+            startService(serviceIntent);
         }
 
-        // Nothing left to display in this Activity — finish so it doesn't sit in the stack
-        finish();
+        // ── 2. Smart connectivity check (WiFi → localhost → error) ────────────
+        new ConnectivityChecker(this).check();
+
+        // ── 3. GitHub auto-update check (parallel, best-effort) ──────────────
+        updateChecker = new UpdateChecker(this);
+        updateChecker.check();
     }
 
-    // -------------------------------------------------------------------------
-    // Gateway IP resolution — kept exactly as in the original
-    // -------------------------------------------------------------------------
-
-    private String getGatewayIp() {
-        // Method 1: ConnectivityManager LinkProperties (API 23+)
-        try {
-            ConnectivityManager cm =
-                    (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                Network activeNetwork = cm.getActiveNetwork();
-                if (activeNetwork != null) {
-                    LinkProperties linkProperties = cm.getLinkProperties(activeNetwork);
-                    if (linkProperties != null) {
-                        for (RouteInfo route : linkProperties.getRoutes()) {
-                            if (route.isDefaultRoute()
-                                    && route.getGateway() instanceof Inet4Address) {
-                                return route.getGateway().getHostAddress();
-                            }
-                        }
-                    }
-                }
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        // Unregister the DownloadManager BroadcastReceiver to prevent leaks
+        if (updateChecker != null) {
+            updateChecker.unregisterReceiver(this);
         }
-
-        // Method 2: Fallback via Java Network Sockets & InterfaceAddress
-        try {
-            try (DatagramSocket socket = new DatagramSocket()) {
-                socket.connect(InetAddress.getByName("8.8.8.8"), 10002);
-                InetAddress localAddress = socket.getLocalAddress();
-
-                NetworkInterface networkInterface =
-                        NetworkInterface.getByInetAddress(localAddress);
-                if (networkInterface != null) {
-                    for (InterfaceAddress address : networkInterface.getInterfaceAddresses()) {
-                        if (address.getAddress() instanceof Inet4Address) {
-                            String localIp = address.getAddress().getHostAddress();
-                            if (localIp != null && localIp.contains(".")) {
-                                return localIp.substring(0, localIp.lastIndexOf('.')) + ".1";
-                            }
-                        }
-                    }
-                }
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        // Ultimate default fallback
-        return "192.168.1.1";
     }
 }
