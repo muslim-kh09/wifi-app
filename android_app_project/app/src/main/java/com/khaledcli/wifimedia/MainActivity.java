@@ -12,9 +12,9 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.PowerManager;
 import android.provider.Settings;
-import android.view.Gravity;
+import android.view.View;
 import android.widget.Button;
-import android.widget.LinearLayout;
+import android.widget.ImageButton;
 import android.widget.TextView;
 
 /**
@@ -50,36 +50,31 @@ public class MainActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         AppLogger.init(this);
-        setupMinimalUI();
+        setContentView(R.layout.activity_main);
+        
+        setupDashboard();
         startPermissionChain();
     }
 
-    private void setupMinimalUI() {
-        LinearLayout layout = new LinearLayout(this);
-        layout.setOrientation(LinearLayout.VERTICAL);
-        layout.setGravity(Gravity.CENTER);
-        layout.setBackgroundColor(Color.BLACK);
+    private void setupDashboard() {
+        ImageButton btnConsole = findViewById(R.id.btn_debug_console);
+        Button btn8080 = findViewById(R.id.btn_internet_portal);
+        Button btn8090 = findViewById(R.id.btn_local_ecosystem);
 
-        TextView tvLoading = new TextView(this);
-        tvLoading.setText("جاري التحميل...");
-        tvLoading.setTextColor(Color.WHITE);
-        tvLoading.setTextSize(18);
-        layout.addView(tvLoading);
+        btnConsole.setOnClickListener(v -> startActivity(new Intent(MainActivity.this, LogViewerActivity.class)));
 
-        Button btnDebug = new Button(this);
-        btnDebug.setText("سجل النظام");
-        btnDebug.setBackgroundColor(Color.DKGRAY);
-        btnDebug.setTextColor(Color.LTGRAY);
-        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.WRAP_CONTENT,
-                LinearLayout.LayoutParams.WRAP_CONTENT
-        );
-        params.topMargin = 50;
-        btnDebug.setLayoutParams(params);
-        btnDebug.setOnClickListener(v -> startActivity(new Intent(MainActivity.this, LogViewerActivity.class)));
-        layout.addView(btnDebug);
+        btn8080.setOnClickListener(v -> {
+            AppLogger.info("UI", "User clicked Port 8080 button (Internet Portal)");
+            new ConnectivityChecker(MainActivity.this).check();
+        });
 
-        setContentView(layout);
+        btn8090.setOnClickListener(v -> {
+            AppLogger.info("UI", "User clicked Port 8090 button (Local Ecosystem)");
+            // Bypass ConnectivityChecker and launch directly to 8090
+            String directUrl = "http://192.168.49.1:8090/";
+            int darkColor = android.graphics.Color.parseColor("#121212");
+            CustomTabsHelper.openUrl(MainActivity.this, directUrl, darkColor);
+        });
     }
 
     @Override
@@ -224,12 +219,12 @@ public class MainActivity extends Activity {
 
     private void launchServicesAndChecks() {
         // ── 1. Foreground service (persistent notification + background ping loop) ──
-        // Pass the device's wlan0 MAC address so WifiService can identify
-        // this device in the heartbeat ping URL (?mac=XX:XX:XX:XX:XX:XX).
         try {
-            String deviceMac = MacAddressHelper.getWlanMac();
+            String deviceMac = MacAddressHelper.getWlanMac(this);
+            String nativeId  = MacAddressHelper.getAndroidId(this);
             Intent serviceIntent = new Intent(this, WifiService.class);
             serviceIntent.putExtra(WifiService.EXTRA_DEVICE_MAC, deviceMac);
+            serviceIntent.putExtra(WifiService.EXTRA_NATIVE_ID, nativeId);
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 startForegroundService(serviceIntent); // API 26+
@@ -237,14 +232,13 @@ public class MainActivity extends Activity {
                 startService(serviceIntent);
             }
         } catch (Exception e) {
-            // Non-fatal: service failure must never crash the app.
-            e.printStackTrace();
+            AppLogger.error("WIFI_SVC", "Failed to start WifiService", e);
         }
 
-        // ── 2. Smart connectivity check (WiFi → localhost → Arabic error dialog) ──
-        new ConnectivityChecker(this).check();
+        // Note: ConnectivityChecker is now triggered by the dashboard button,
+        // not automatically launched here.
 
-        // ── 3. GitHub auto-update check (parallel, best-effort) ──────────────
+        // ── 2. GitHub auto-update check (parallel, best-effort) ──────────────
         updateChecker = new UpdateChecker(this);
         updateChecker.check();
     }

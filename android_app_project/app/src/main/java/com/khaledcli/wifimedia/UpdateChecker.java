@@ -78,7 +78,7 @@ public class UpdateChecker {
                 // Skip if there is no validated external internet
                 if (!hasValidatedInternet(activity)) return;
 
-                // Fetch the latest release metadata
+                // Fetch the latest release metadata from GitHub
                 String json = fetchJson(GITHUB_API_URL);
                 if (json == null) return;
 
@@ -212,11 +212,11 @@ public class UpdateChecker {
         Activity activity = activityRef.get();
         if (activity == null || activity.isFinishing()) return;
 
-        new AlertDialog.Builder(activity)
+        AlertDialog dialog = new AlertDialog.Builder(activity, android.R.style.Theme_DeviceDefault_Dialog_Alert)
                 .setTitle("تحديث متاح")
                 .setMessage("إصدار جديد متاح (v" + latestVersion
                         + ").\nهل تريد التحديث الآن؟")
-                .setPositiveButton("تحديث", (dialog, which) -> startDownload(apkUrl))
+                .setPositiveButton("تحديث", (d, which) -> startDownload(apkUrl))
                 .setNegativeButton("لاحقاً", null)
                 .setCancelable(false)
                 .show();

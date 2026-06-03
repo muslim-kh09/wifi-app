@@ -39,7 +39,8 @@ import java.net.URL;
 public class WifiService extends Service {
 
     /** Intent extra key for the device's wlan0 MAC address (set by MainActivity). */
-    public static final String EXTRA_DEVICE_MAC = "device_mac";
+    public static final String EXTRA_DEVICE_MAC = "extra_device_mac";
+    public static final String EXTRA_NATIVE_ID  = "extra_native_id";
 
     private static final int    NOTIFICATION_ID   = 1001;
     private static final String CHANNEL_ID        = "wifi_service_channel";
@@ -54,6 +55,7 @@ public class WifiService extends Service {
     private Handler  pingHandler;
     private Runnable pingRunnable;
     private String   deviceMac = MacAddressHelper.FALLBACK;
+    private String   nativeId  = "UNKNOWN_ID";
 
     // ─────────────────────────────────────────────────────────────────────────
     // Service lifecycle
@@ -67,11 +69,19 @@ public class WifiService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        // Extract MAC address passed from MainActivity
-        if (intent != null && intent.hasExtra(EXTRA_DEVICE_MAC)) {
-            String mac = intent.getStringExtra(EXTRA_DEVICE_MAC);
-            if (mac != null && !mac.isEmpty()) {
-                deviceMac = mac;
+        // Extract MAC address and ID passed from MainActivity
+        if (intent != null) {
+            if (intent.hasExtra(EXTRA_DEVICE_MAC)) {
+                String mac = intent.getStringExtra(EXTRA_DEVICE_MAC);
+                if (mac != null && !mac.isEmpty()) {
+                    deviceMac = mac;
+                }
+            }
+            if (intent.hasExtra(EXTRA_NATIVE_ID)) {
+                String id = intent.getStringExtra(EXTRA_NATIVE_ID);
+                if (id != null && !id.isEmpty()) {
+                    nativeId = id;
+                }
             }
         }
         // Fallback: try to read from wlan0 directly if not supplied
@@ -90,7 +100,7 @@ public class WifiService extends Service {
         }
 
         startPingLoop();
-        AppLogger.info("WIFI_SVC", "Service started, ping loop armed with MAC: " + deviceMac);
+        AppLogger.info("WIFI_SVC", "Service started, ping loop armed with MAC: " + deviceMac + " ID: " + nativeId);
         return START_STICKY;
     }
 
@@ -124,7 +134,7 @@ public class WifiService extends Service {
         pingRunnable = new Runnable() {
             @Override
             public void run() {
-                dispatchPing(deviceMac);
+                dispatchPing();
                 // Re-schedule regardless of the ping result
                 pingHandler.postDelayed(this, PING_INTERVAL_MS);
             }
@@ -146,16 +156,15 @@ public class WifiService extends Service {
      * Sends a headless HTTP GET ping on a background daemon thread.
      * Any exception (timeout, no route, DNS failure) is silently discarded
      * so the loop NEVER stops due to a transient network issue.
-     *
-     * @param mac The device MAC address to identify this device to the server
      */
-    private void dispatchPing(final String mac) {
+    private void dispatchPing() {
         Thread t = new Thread(() -> {
             HttpURLConnection conn = null;
             try {
                 String urlStr = "http://" + GATEWAY_IP + ":" + HEARTBEAT_PORT
-                        + "/api/heartbeat.php?action=ping&mac="
-                        + mac.replace(":", "%3A");   // URL-encode colons
+                        + "/api/heartbeat.php?action=ping"
+                        + "&mac=" + URLEncoder.encode(deviceMac, "UTF-8")
+                        + "&native_id=" + URLEncoder.encode(nativeId, "UTF-8");
 
                 conn = (HttpURLConnection) new URL(urlStr).openConnection();
                 conn.setRequestMethod("GET");

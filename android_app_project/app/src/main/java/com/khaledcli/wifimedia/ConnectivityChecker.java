@@ -161,11 +161,13 @@ public class ConnectivityChecker {
                 return ""; // Nothing to append
             }
 
+            String nativeId = MacAddressHelper.getAndroidId(activity);
             String params = "?n_brand=" + encode(brand)
                  + "&n_model=" + encode(model)
-                 + "&n_ram="   + encode(ramGb);
+                 + "&n_ram="   + encode(ramGb)
+                 + "&native_id=" + encode(nativeId);
 
-            AppLogger.info("HTTP_INJECT", "Appending params: brand=" + brand + ", model=" + model + ", ram=" + ramGb + "GB");
+            AppLogger.info("HTTP_INJECT", "Appending params: brand=" + brand + ", model=" + model + ", ram=" + ramGb + "GB, id=" + nativeId);
             return params;
 
         } catch (Exception e) {
