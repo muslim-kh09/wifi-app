@@ -8,33 +8,52 @@ import android.app.Service;
 import android.content.Intent;
 import android.content.pm.ServiceInfo;
 import android.os.Build;
+import android.os.Handler;
 import android.os.IBinder;
+import android.os.Looper;
 
 import androidx.core.app.NotificationCompat;
 
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+
 /**
- * Foreground Service that keeps the app alive and shows a persistent,
- * non-swipeable Arabic notification.
+ * Persistent Foreground Service with a background heartbeat ping loop.
  *
- * Notification spec:
- *   Title : "تطبيق واي فاي"
- *   Text  : "أنت متصل بشبكة السيرفر"
- *   Tap   : Brings MainActivity to the front (FLAG_ACTIVITY_SINGLE_TOP — no restart)
+ * Responsibilities:
+ *  1. Show an ongoing Arabic notification ("Network Connectivity Guard").
+ *  2. Fire a headless HTTP GET ping to the server's heartbeat endpoint every
+ *     60 seconds, even when Chrome is closed or the phone is locked.
+ *     Endpoint: http://192.168.49.1:8080/api/heartbeat.php?action=ping&mac=...
+ *  3. The server's guillotine logic will invalidate access for any registered
+ *     MAC that has not pinged within 120 seconds.
  *
  * Design notes:
- *   - IMPORTANCE_LOW → silent channel (no sound / vibration)
- *   - setOngoing(true) → non-swipeable
- *   - START_STICKY → OS will restart the service if it is killed
- *   - foregroundServiceType = dataSync (declared in manifest + permission).
- *     'connectedDevice' was rejected because it requires an active Bluetooth/USB/NFC
- *     link and throws InvalidForegroundServiceTypeException on Android 14+ without one.
- *   - startForeground() passes the typed constant on API 29+ to match the manifest.
+ *  - EXTRA_DEVICE_MAC: Intent extra — passed from MainActivity via MacAddressHelper.
+ *  - The ping is dispatched on a daemon background thread; failures are silently
+ *    swallowed so the loop NEVER stops due to a network error.
+ *  - START_STICKY → OS restarts the service if it is killed.
+ *  - foregroundServiceType = dataSync (declared in manifest + FOREGROUND_SERVICE_DATA_SYNC).
  */
 public class WifiService extends Service {
 
-    private static final int    NOTIFICATION_ID = 1001;
-    private static final String CHANNEL_ID      = "wifi_service_channel";
-    private static final String CHANNEL_NAME    = "WiFi Service";
+    /** Intent extra key for the device's wlan0 MAC address (set by MainActivity). */
+    public static final String EXTRA_DEVICE_MAC = "device_mac";
+
+    private static final int    NOTIFICATION_ID   = 1001;
+    private static final String CHANNEL_ID        = "wifi_service_channel";
+    private static final String CHANNEL_NAME      = "WiFi Service";
+
+    // Heartbeat configuration
+    private static final String GATEWAY_IP        = "192.168.49.1";
+    private static final int    HEARTBEAT_PORT    = 8080;
+    private static final long   PING_INTERVAL_MS  = 60_000L;   // 60 seconds
+    private static final int    PING_TIMEOUT_MS   = 10_000;    // 10 seconds per ping
+
+    private Handler  pingHandler;
+    private Runnable pingRunnable;
+    private String   deviceMac = MacAddressHelper.FALLBACK;
 
     // ─────────────────────────────────────────────────────────────────────────
     // Service lifecycle
@@ -42,19 +61,36 @@ public class WifiService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        // Extract MAC address passed from MainActivity
+        if (intent != null && intent.hasExtra(EXTRA_DEVICE_MAC)) {
+            String mac = intent.getStringExtra(EXTRA_DEVICE_MAC);
+            if (mac != null && !mac.isEmpty()) {
+                deviceMac = mac;
+            }
+        }
+        // Fallback: try to read from wlan0 directly if not supplied
+        if (MacAddressHelper.FALLBACK.equals(deviceMac)) {
+            deviceMac = MacAddressHelper.getWlanMac();
+        }
+
         createNotificationChannel();
         Notification notification = buildNotification();
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            // API 29+: pass the typed constant that matches the manifest's
-            // foregroundServiceType="dataSync" attribute.
             startForeground(NOTIFICATION_ID, notification,
                     ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC);
         } else {
             startForeground(NOTIFICATION_ID, notification);
         }
 
-        return START_STICKY; // Restart automatically if killed by the OS
+        startPingLoop();
+        return START_STICKY;
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        stopPingLoop();
     }
 
     @Override
@@ -63,7 +99,88 @@ public class WifiService extends Service {
     }
 
     // ─────────────────────────────────────────────────────────────────────────
-    // Notification channel (required on API 26+, no-op on older versions)
+    // Background heartbeat ping loop
+    // ─────────────────────────────────────────────────────────────────────────
+
+    /**
+     * Initialises a {@link Handler} on the main looper and schedules a recurring
+     * Runnable that fires every {@link #PING_INTERVAL_MS} milliseconds.
+     *
+     * Each iteration spawns a short-lived daemon thread to perform the HTTP GET,
+     * keeping the main-looper Runnable itself non-blocking.
+     */
+    private void startPingLoop() {
+        if (pingHandler != null) return; // Already running
+
+        pingHandler = new Handler(Looper.getMainLooper());
+        pingRunnable = new Runnable() {
+            @Override
+            public void run() {
+                dispatchPing(deviceMac);
+                // Re-schedule regardless of the ping result
+                pingHandler.postDelayed(this, PING_INTERVAL_MS);
+            }
+        };
+
+        // Fire the first ping immediately, then repeat every 60 s
+        pingHandler.post(pingRunnable);
+    }
+
+    private void stopPingLoop() {
+        if (pingHandler != null && pingRunnable != null) {
+            pingHandler.removeCallbacks(pingRunnable);
+        }
+        pingHandler  = null;
+        pingRunnable = null;
+    }
+
+    /**
+     * Sends a headless HTTP GET ping on a background daemon thread.
+     * Any exception (timeout, no route, DNS failure) is silently discarded
+     * so the loop NEVER stops due to a transient network issue.
+     *
+     * @param mac The device MAC address to identify this device to the server
+     */
+    private void dispatchPing(final String mac) {
+        Thread t = new Thread(() -> {
+            HttpURLConnection conn = null;
+            try {
+                String urlStr = "http://" + GATEWAY_IP + ":" + HEARTBEAT_PORT
+                        + "/api/heartbeat.php?action=ping&mac="
+                        + mac.replace(":", "%3A");   // URL-encode colons
+
+                conn = (HttpURLConnection) new URL(urlStr).openConnection();
+                conn.setRequestMethod("GET");
+                conn.setConnectTimeout(PING_TIMEOUT_MS);
+                conn.setReadTimeout(PING_TIMEOUT_MS);
+                conn.setUseCaches(false);
+
+                int code = conn.getResponseCode();
+
+                // Drain the response body to allow connection reuse
+                try {
+                    InputStream is = conn.getInputStream();
+                    if (is != null) {
+                        byte[] buf = new byte[256];
+                        while (is.read(buf) != -1) { /* drain */ }
+                        is.close();
+                    }
+                } catch (Exception ignored) {}
+
+            } catch (Exception e) {
+                // Silent: network failure must not stop the loop
+            } finally {
+                if (conn != null) {
+                    try { conn.disconnect(); } catch (Exception ignored) {}
+                }
+            }
+        }, "WifiService-Ping");
+        t.setDaemon(true);
+        t.start();
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // Notification channel (required API 26+)
     // ─────────────────────────────────────────────────────────────────────────
 
     private void createNotificationChannel() {
@@ -71,9 +188,9 @@ public class WifiService extends Service {
             NotificationChannel channel = new NotificationChannel(
                     CHANNEL_ID,
                     CHANNEL_NAME,
-                    NotificationManager.IMPORTANCE_LOW); // Silent — no sound or vibration
+                    NotificationManager.IMPORTANCE_LOW);   // Silent — no sound/vibration
 
-            channel.setDescription("WiFi captive-portal service notification");
+            channel.setDescription("Network Connectivity Guard — background ping service");
             channel.setShowBadge(false);
             channel.enableLights(false);
             channel.enableVibration(false);
@@ -88,12 +205,9 @@ public class WifiService extends Service {
     // ─────────────────────────────────────────────────────────────────────────
 
     private Notification buildNotification() {
-        // Tap → bring MainActivity to front without restarting it
         Intent mainIntent = new Intent(this, MainActivity.class)
-                .addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP
-                        | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                .addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_CLEAR_TOP);
 
-        // FLAG_IMMUTABLE is mandatory on API 31+; safe to set on older versions too
         int pendingFlags = PendingIntent.FLAG_UPDATE_CURRENT
                 | (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M
                         ? PendingIntent.FLAG_IMMUTABLE : 0);
@@ -102,14 +216,14 @@ public class WifiService extends Service {
                 PendingIntent.getActivity(this, 0, mainIntent, pendingFlags);
 
         return new NotificationCompat.Builder(this, CHANNEL_ID)
-                .setContentTitle("تطبيق واي فاي")
-                .setContentText("أنت متصل بشبكة السيرفر")
+                .setContentTitle("حارس الشبكة")
+                .setContentText("جاري مراقبة الاتصال بالشبكة في الخلفية")
                 .setSmallIcon(R.drawable.ic_launcher)
                 .setContentIntent(pendingIntent)
-                .setOngoing(true)                            // Non-swipeable
+                .setOngoing(true)                               // Non-swipeable
                 .setPriority(NotificationCompat.PRIORITY_LOW)
                 .setCategory(NotificationCompat.CATEGORY_SERVICE)
-                .setShowWhen(false)                          // Don't show timestamp
+                .setShowWhen(false)
                 .build();
     }
 }

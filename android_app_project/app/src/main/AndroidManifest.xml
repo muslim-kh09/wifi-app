@@ -9,6 +9,23 @@
     <!-- WiFi transport detection (ConnectivityChecker.isWifiConnected) -->
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
 
+    <!-- ── Location (runtime permission — required for WiFi AP identification) ── -->
+    <!--
+        ACCESS_FINE_LOCATION is required by Android 9+ for WifiManager to return
+        real SSID/BSSID data. Also enables the gateway IP resolution used by
+        ConnectivityChecker. Requested at runtime before portal launch.
+    -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+
+    <!-- ── Battery Optimization Exemption ───────────────────────────────────── -->
+    <!--
+        REQUEST_IGNORE_BATTERY_OPTIMIZATIONS allows the app to ask the system
+        to whitelist it from Doze mode, ensuring WifiService heartbeat pings
+        continue firing even when the screen is off or the phone is locked.
+    -->
+    <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
+
     <!-- ── Notifications (runtime permission on API 33+) ─────────────────── -->
     <!--
         POST_NOTIFICATIONS became a runtime permission in Android 13 (API 33).
