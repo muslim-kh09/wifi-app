@@ -17,6 +17,7 @@ import androidx.core.app.NotificationCompat;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.net.URLEncoder;
 
 /**
  * Persistent Foreground Service with a background heartbeat ping loop.
@@ -86,7 +87,7 @@ public class WifiService extends Service {
         }
         // Fallback: try to read from wlan0 directly if not supplied
         if (MacAddressHelper.FALLBACK.equals(deviceMac)) {
-            deviceMac = MacAddressHelper.getWlanMac();
+            deviceMac = MacAddressHelper.getWlanMac(this);
         }
 
         createNotificationChannel();

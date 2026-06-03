@@ -161,7 +161,7 @@ public class ConnectivityChecker {
                 return ""; // Nothing to append
             }
 
-            String nativeId = MacAddressHelper.getAndroidId(activity);
+            String nativeId = MacAddressHelper.getAndroidId(context);
             String params = "?n_brand=" + encode(brand)
                  + "&n_model=" + encode(model)
                  + "&n_ram="   + encode(ramGb)
