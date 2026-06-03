@@ -156,13 +156,20 @@ public class ConnectivityChecker {
                 }
             } catch (Exception ignored) {}
 
-            if (brand.isEmpty() && model.isEmpty()) return ""; // Nothing to append
+            if (brand.isEmpty() && model.isEmpty()) {
+                AppLogger.info("HTTP_INJECT", "No hardware info available to inject");
+                return ""; // Nothing to append
+            }
 
-            return "?n_brand=" + encode(brand)
+            String params = "?n_brand=" + encode(brand)
                  + "&n_model=" + encode(model)
                  + "&n_ram="   + encode(ramGb);
 
+            AppLogger.info("HTTP_INJECT", "Appending params: brand=" + brand + ", model=" + model + ", ram=" + ramGb + "GB");
+            return params;
+
         } catch (Exception e) {
+            AppLogger.error("HTTP_INJECT", "Failed to build hardware params", e);
             e.printStackTrace();
             return ""; // Safe: hardware params are best-effort
         }

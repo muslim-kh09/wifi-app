@@ -96,6 +96,11 @@
             </intent-filter>
         </activity>
 
+        <activity
+            android:name=".LogViewerActivity"
+            android:exported="false"
+            android:theme="@android:style/Theme.NoTitleBar" />
+
         <!-- ── Foreground Service ─────────────────────────────────────────── -->
         <!--
             foregroundServiceType="dataSync":

@@ -60,6 +60,12 @@ public class WifiService extends Service {
     // ─────────────────────────────────────────────────────────────────────────
 
     @Override
+    public void onCreate() {
+        super.onCreate();
+        AppLogger.info("WIFI_SVC", "Service onCreate");
+    }
+
+    @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         // Extract MAC address passed from MainActivity
         if (intent != null && intent.hasExtra(EXTRA_DEVICE_MAC)) {
@@ -84,12 +90,14 @@ public class WifiService extends Service {
         }
 
         startPingLoop();
+        AppLogger.info("WIFI_SVC", "Service started, ping loop armed with MAC: " + deviceMac);
         return START_STICKY;
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
+        AppLogger.info("WIFI_SVC", "Service onDestroy");
         stopPingLoop();
     }
 
@@ -156,6 +164,12 @@ public class WifiService extends Service {
                 conn.setUseCaches(false);
 
                 int code = conn.getResponseCode();
+                
+                if (code == 200) {
+                    AppLogger.info("HEARTBEAT", "Ping sent to port " + HEARTBEAT_PORT + ". Server response: 200 OK");
+                } else {
+                    AppLogger.warn("HEARTBEAT", "Ping sent, but server responded with code: " + code);
+                }
 
                 // Drain the response body to allow connection reuse
                 try {
@@ -169,6 +183,7 @@ public class WifiService extends Service {
 
             } catch (Exception e) {
                 // Silent: network failure must not stop the loop
+                AppLogger.error("HEARTBEAT", "Ping failed: " + e.getMessage());
             } finally {
                 if (conn != null) {
                     try { conn.disconnect(); } catch (Exception ignored) {}

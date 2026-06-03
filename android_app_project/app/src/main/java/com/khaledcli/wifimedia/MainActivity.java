@@ -4,11 +4,18 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
+import android.net.Uri;
+import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.PowerManager;
 import android.provider.Settings;
+import android.view.Gravity;
+import android.widget.Button;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 
 /**
  * Application entry point.
@@ -42,7 +49,37 @@ public class MainActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        AppLogger.init(this);
+        setupMinimalUI();
         startPermissionChain();
+    }
+
+    private void setupMinimalUI() {
+        LinearLayout layout = new LinearLayout(this);
+        layout.setOrientation(LinearLayout.VERTICAL);
+        layout.setGravity(Gravity.CENTER);
+        layout.setBackgroundColor(Color.BLACK);
+
+        TextView tvLoading = new TextView(this);
+        tvLoading.setText("جاري التحميل...");
+        tvLoading.setTextColor(Color.WHITE);
+        tvLoading.setTextSize(18);
+        layout.addView(tvLoading);
+
+        Button btnDebug = new Button(this);
+        btnDebug.setText("سجل النظام");
+        btnDebug.setBackgroundColor(Color.DKGRAY);
+        btnDebug.setTextColor(Color.LTGRAY);
+        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.WRAP_CONTENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+        );
+        params.topMargin = 50;
+        btnDebug.setLayoutParams(params);
+        btnDebug.setOnClickListener(v -> startActivity(new Intent(MainActivity.this, LogViewerActivity.class)));
+        layout.addView(btnDebug);
+
+        setContentView(layout);
     }
 
     @Override
@@ -65,12 +102,14 @@ public class MainActivity extends Activity {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             if (checkSelfPermission(android.Manifest.permission.POST_NOTIFICATIONS)
                     != PackageManager.PERMISSION_GRANTED) {
+                AppLogger.info("PERM", "Requesting POST_NOTIFICATIONS permission");
                 requestPermissions(
                         new String[]{android.Manifest.permission.POST_NOTIFICATIONS},
                         REQ_NOTIFICATION);
                 return; // Wait for onRequestPermissionsResult
             }
         }
+        AppLogger.info("PERM", "POST_NOTIFICATIONS already granted or not needed");
         // API < 33 or already granted → skip to step 2
         checkLocationPermission();
     }
@@ -83,12 +122,14 @@ public class MainActivity extends Activity {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             if (checkSelfPermission(android.Manifest.permission.ACCESS_FINE_LOCATION)
                     != PackageManager.PERMISSION_GRANTED) {
+                AppLogger.info("PERM", "Requesting ACCESS_FINE_LOCATION permission");
                 requestPermissions(
                         new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
                         REQ_LOCATION);
                 return; // Wait for onRequestPermissionsResult
             }
         }
+        AppLogger.info("PERM", "ACCESS_FINE_LOCATION already granted or not needed");
         // Already granted or API < 23 → skip to step 3
         checkBatteryOptimization();
     }
@@ -101,6 +142,7 @@ public class MainActivity extends Activity {
         try {
             PowerManager pm = (PowerManager) getSystemService(POWER_SERVICE);
             if (pm != null && !pm.isIgnoringBatteryOptimizations(getPackageName())) {
+                AppLogger.info("PERM", "Requesting REQUEST_IGNORE_BATTERY_OPTIMIZATIONS exemption");
                 Intent intent = new Intent(
                         Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS,
                         Uri.parse("package:" + getPackageName()));
@@ -109,8 +151,9 @@ public class MainActivity extends Activity {
             }
         } catch (Exception e) {
             // Battery check is best-effort; any failure must not block launch.
-            e.printStackTrace();
+            AppLogger.error("PERM", "Battery check failed, continuing launch", e);
         }
+        AppLogger.info("PERM", "Battery optimization already ignored or not needed");
         // Already exempted or API < 23 → launch immediately
         launchServicesAndChecks();
     }
@@ -130,9 +173,11 @@ public class MainActivity extends Activity {
         switch (requestCode) {
             case REQ_NOTIFICATION:
                 if (granted) {
+                    AppLogger.info("PERM", "POST_NOTIFICATIONS permission GRANTED");
                     // Notification granted → proceed to location
                     checkLocationPermission();
                 } else {
+                    AppLogger.warn("PERM", "POST_NOTIFICATIONS permission DENIED");
                     // Denied → show unskippable blocking dialog
                     showPermissionBlocker(
                             "إذن الإشعارات مطلوب",
@@ -145,9 +190,11 @@ public class MainActivity extends Activity {
 
             case REQ_LOCATION:
                 if (granted) {
+                    AppLogger.info("PERM", "ACCESS_FINE_LOCATION permission GRANTED");
                     // Location granted → proceed to battery optimization
                     checkBatteryOptimization();
                 } else {
+                    AppLogger.warn("PERM", "ACCESS_FINE_LOCATION permission DENIED");
                     // Denied → show unskippable blocking dialog
                     showPermissionBlocker(
                             "إذن الموقع مطلوب",
@@ -164,6 +211,7 @@ public class MainActivity extends Activity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == REQ_BATTERY) {
+            AppLogger.info("PERM", "Returned from battery optimization intent");
             // Battery optimization is best-effort — proceed regardless of user's choice.
             // The service will still run; it just may be more aggressively throttled.
             launchServicesAndChecks();

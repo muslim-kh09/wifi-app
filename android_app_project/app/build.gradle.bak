@@ -10,13 +10,11 @@ android {
         applicationId "com.khaledcli.wifimedia"
         minSdk 21
         targetSdk 34
-<<<<<<< HEAD
-        versionCode 5        // Bumped from 4 → 5 for v1.5
-        versionName "1.5"    // Bumped from 1.3 → 1.5
-=======
-        versionCode 4        
-        versionName "1.3"    
->>>>>>> 05fa36fb9ed21d31ff867bd822e161cf9d907563
+        
+        versionCode 6        // Bumped from 5 → 6 for v1.6
+        versionName "1.6"    // Bumped from 1.5 → 1.6
+ 
+
 
         // Expose versionName to Java via BuildConfig.VERSION_NAME
         // (used by UpdateChecker for version comparison)
