@@ -60,6 +60,12 @@ public class MainActivity extends Activity {
         ImageButton btnConsole = findViewById(R.id.btn_debug_console);
         Button btn8080 = findViewById(R.id.btn_internet_portal);
         Button btn8090 = findViewById(R.id.btn_local_ecosystem);
+        TextView tvVersion = findViewById(R.id.tv_version);
+
+        // Dynamically link actual version from build.gradle
+        if (tvVersion != null) {
+            tvVersion.setText("الإصدار " + BuildConfig.VERSION_NAME);
+        }
 
         btnConsole.setOnClickListener(v -> startActivity(new Intent(MainActivity.this, LogViewerActivity.class)));
 
