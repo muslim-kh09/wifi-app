@@ -7,6 +7,7 @@
 
     <!-- WiFi transport detection (ConnectivityChecker.isWifiConnected) -->
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
 
     <!-- ── Location (runtime permission — required for WiFi AP identification) ── -->
     <!--
