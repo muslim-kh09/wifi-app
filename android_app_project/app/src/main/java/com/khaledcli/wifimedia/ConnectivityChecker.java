@@ -73,29 +73,43 @@ public class ConnectivityChecker {
             // Build native hardware query string once (used in both URLs)
             final String hwParams = buildHardwareParams(activity);
 
-            // Single guard variable — only one path may set it.
-            String resolvedUrl = null;
+            // ── Concurrent Fast-Probing Strategy ─────────────────────────────
+            java.util.concurrent.atomic.AtomicReference<String> winner = new java.util.concurrent.atomic.AtomicReference<>(null);
+            java.util.concurrent.CountDownLatch latch = new java.util.concurrent.CountDownLatch(1);
+            int probeCount = 0;
 
-            // ── Step 1: WiFi gateway ──────────────────────────────────────────
-            if (isWifiConnected(activity)) {
-                String gatewayIp = resolveGatewayIp(activity);
-                if (gatewayIp != null && !gatewayIp.isEmpty()) {
-                    String candidate = "http://" + gatewayIp + PORT_AND_PATH + hwParams;
-                    if (isReachable(candidate, 3000)) {
-                        resolvedUrl = candidate;
+            String dynamicGateway = isWifiConnected(activity) ? resolveGatewayIp(activity) : null;
+            String[] targetIps = new String[]{ dynamicGateway, "192.168.49.1", "127.0.0.1" };
+            
+            for (String ip : targetIps) {
+                if (ip != null && !ip.isEmpty() && !ip.equals("0.0.0.0")) {
+                    probeCount++;
+                    final String candidateUrl;
+                    if (ip.equals("127.0.0.1")) {
+                        candidateUrl = "http://127.0.0.1:8080/index.php"
+                                + "?clientmac=06%3Aff%3A89%3A94%3Ae0%3Ada&tok=1&redir=google.com"
+                                + (hwParams.startsWith("?") ? "&" + hwParams.substring(1) : hwParams);
+                    } else {
+                        candidateUrl = "http://" + ip + PORT_AND_PATH + hwParams;
                     }
+
+                    new Thread(() -> {
+                        if (isReachable(candidateUrl, 2500)) {
+                            if (winner.compareAndSet(null, candidateUrl)) {
+                                latch.countDown();
+                            }
+                        }
+                    }).start();
                 }
             }
 
-            // ── Step 2: Localhost fallback ─────────────────────────────────────
-            if (resolvedUrl == null) {
-                String localhostCandidate = "http://127.0.0.1:8080/index.php"
-                        + "?clientmac=06%3Aff%3A89%3A94%3Ae0%3Ada&tok=1&redir=google.com"
-                        + (hwParams.startsWith("?") ? "&" + hwParams.substring(1) : hwParams);
-                if (isReachable(localhostCandidate, 2000)) {
-                    resolvedUrl = localhostCandidate;
+            try {
+                if (probeCount > 0) {
+                    latch.await(3000, java.util.concurrent.TimeUnit.MILLISECONDS);
                 }
-            }
+            } catch (InterruptedException ignored) {}
+
+            String resolvedUrl = winner.get();
 
             // ── Step 3: Single decision point ─────────────────────────────────
             final String urlToLaunch = resolvedUrl;

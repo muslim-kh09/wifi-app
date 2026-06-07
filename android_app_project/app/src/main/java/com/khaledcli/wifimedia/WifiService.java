@@ -6,6 +6,8 @@ import android.app.NotificationManager;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.app.AlarmManager;
+import android.app.PendingIntent;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.Build;
@@ -34,11 +36,12 @@ public class WifiService extends Service {
     public static final String EXTRA_DEVICE_MAC = "extra_device_mac";
     public static final String EXTRA_NATIVE_ID  = "extra_native_id";
 
+    public static final String ACTION_PING = "com.khaledcli.wifimedia.ACTION_PING";
+
     // Adjust this URL to point to the hotspot gateway's heartbeat.php
     private static final String HEARTBEAT_URL = "http://192.168.49.1:8080/api/heartbeat.php";
 
     private PowerManager.WakeLock wakeLock;
-    private ScheduledExecutorService scheduler;
     
     private String deviceMac = "";
     private String nativeId = "";
@@ -50,9 +53,6 @@ public class WifiService extends Service {
         
         PowerManager powerManager = (PowerManager) getSystemService(Context.POWER_SERVICE);
         wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "WifiMedia::PingWakeLock");
-        wakeLock.acquire(24 * 60 * 60 * 1000L); // 24 hours max
-
-        scheduler = Executors.newSingleThreadScheduledExecutor();
     }
 
     @Override
@@ -86,11 +86,42 @@ public class WifiService extends Service {
             startForeground(NOTIFICATION_ID, notification);
         }
 
-        // Schedule ping every 60 seconds
-        scheduler.scheduleAtFixedRate(this::sendHeartbeat, 0, 60, TimeUnit.SECONDS);
+        if (intent != null && ACTION_PING.equals(intent.getAction())) {
+            new Thread(this::sendHeartbeat).start();
+            scheduleNextPing();
+            return START_STICKY;
+        }
 
-        Log.i(TAG, "Service started, ping loop armed with MAC: " + deviceMac + " ID: " + nativeId);
+        // Initial launch
+        scheduleNextPing();
+        new Thread(this::sendHeartbeat).start();
+
+        Log.i(TAG, "Service started, ping loop armed via AlarmManager with MAC: " + deviceMac + " ID: " + nativeId);
         return START_STICKY;
+    }
+
+    private void scheduleNextPing() {
+        AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+        Intent pingIntent = new Intent(this, WifiService.class);
+        pingIntent.setAction(ACTION_PING);
+        pingIntent.putExtra(EXTRA_DEVICE_MAC, deviceMac);
+        pingIntent.putExtra(EXTRA_NATIVE_ID, nativeId);
+        int flags = PendingIntent.FLAG_UPDATE_CURRENT;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            flags |= PendingIntent.FLAG_IMMUTABLE;
+        }
+        PendingIntent pendingIntent = PendingIntent.getService(this, 0, pingIntent, flags);
+        
+        long triggerAtMillis = System.currentTimeMillis() + 60 * 1000L;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && !alarmManager.canScheduleExactAlarms()) {
+            alarmManager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, triggerAtMillis, pendingIntent);
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, triggerAtMillis, pendingIntent);
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            alarmManager.setExact(AlarmManager.RTC_WAKEUP, triggerAtMillis, pendingIntent);
+        } else {
+            alarmManager.set(AlarmManager.RTC_WAKEUP, triggerAtMillis, pendingIntent);
+        }
     }
 
     private String getGatewayIp() {
@@ -104,6 +135,9 @@ public class WifiService extends Service {
     private void sendHeartbeat() {
         HttpURLConnection urlConnection = null;
         try {
+            if (wakeLock != null) {
+                wakeLock.acquire(15000); // 15-second safety fallback
+            }
             String heartbeatUrl = "http://" + getGatewayIp() + ":8080/api/heartbeat.php";
             URL url = new URL(heartbeatUrl);
             urlConnection = (HttpURLConnection) url.openConnection();
@@ -137,23 +171,32 @@ public class WifiService extends Service {
             if (urlConnection != null) {
                 urlConnection.disconnect();
             }
+            if (wakeLock != null && wakeLock.isHeld()) {
+                try { wakeLock.release(); } catch (Exception ignored) {}
+            }
         }
     }
 
     private String getMacAddress() {
-        WifiManager wifiManager = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
-        WifiInfo wInfo = wifiManager.getConnectionInfo();
-        return wInfo.getMacAddress();
+        try {
+            WifiManager wifiManager = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+            if (wifiManager != null) {
+                WifiInfo wInfo = wifiManager.getConnectionInfo();
+                if (wInfo != null && wInfo.getMacAddress() != null) {
+                    return wInfo.getMacAddress();
+                }
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Failed to get MAC Address", e);
+        }
+        return "02:00:00:00:00:00";
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
-        if (scheduler != null && !scheduler.isShutdown()) {
-            scheduler.shutdownNow();
-        }
         if (wakeLock != null && wakeLock.isHeld()) {
-            wakeLock.release();
+            try { wakeLock.release(); } catch (Exception ignored) {}
         }
         Log.i(TAG, "Service destroyed.");
     }
