@@ -25,14 +25,14 @@ public class AnnouncementManager {
                 int port = activity.getResources().getInteger(R.integer.server_port);
                 String path = activity.getString(R.string.path_announcement_json);
                 URL url = new URL("http://" + gatewayIp + ":" + port + path);
-                AppLogger.debug("Announcement", "Fetching from URL: " + url.toString());
+                AppLogger.info("Announcement", "Fetching from URL: " + url.toString());
 
                 HttpURLConnection conn = (HttpURLConnection) url.openConnection();
                 conn.setConnectTimeout(3000);
                 conn.setReadTimeout(3000);
 
                 int responseCode = conn.getResponseCode();
-                AppLogger.debug("Announcement", "Response Code: " + responseCode);
+                AppLogger.info("Announcement", "Response Code: " + responseCode);
 
                 if (responseCode == 200) {
                     BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
@@ -44,7 +44,7 @@ public class AnnouncementManager {
                     reader.close();
 
                     String rawJson = sb.toString();
-                    AppLogger.debug("Announcement", "Raw JSON Response: " + rawJson);
+                    AppLogger.info("Announcement", "Raw JSON Response: " + rawJson);
 
                     JSONObject json = new JSONObject(rawJson);
                     
@@ -61,22 +61,22 @@ public class AnnouncementManager {
                         isActive = true;
                     }
                     
-                    AppLogger.debug("Announcement", "Parsed active state: " + isActive);
+                    AppLogger.info("Announcement", "Parsed active state: " + isActive);
 
                     if (isActive) {
                         String type = json.optString("type", "Notice");
                         String message = json.optString("message", "");
                         boolean isMandatory = json.optBoolean("is_mandatory", false);
 
-                        AppLogger.debug("Announcement", "Announcement is active. Posting to UI thread...");
+                        AppLogger.info("Announcement", "Announcement is active. Posting to UI thread...");
                         new Handler(Looper.getMainLooper()).post(() -> {
-                            AppLogger.debug("Announcement", "UI Thread executed. activity.isFinishing=" + activity.isFinishing());
+                            AppLogger.info("Announcement", "UI Thread executed. activity.isFinishing=" + activity.isFinishing());
                             if (!activity.isFinishing() && !activity.isDestroyed()) {
                                 showDialog(activity, type, message, isMandatory);
                             }
                         });
                     } else {
-                        AppLogger.debug("Announcement", "Announcement skipped. Status is not active.");
+                        AppLogger.info("Announcement", "Announcement skipped. Status is not active.");
                     }
                 }
             } catch (Exception e) {
