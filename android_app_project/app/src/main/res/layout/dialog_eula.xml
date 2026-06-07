@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="#FFFFFF"
+    android:padding="24dp">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="شروط الخدمة / Terms of Service"
+        android:textColor="#000000"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="8dp" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="By using this service, you agree to our terms and conditions."
+        android:textColor="#555555"
+        android:textSize="16sp"
+        android:layout_marginBottom="16dp" />
+
+    <TextView
+        android:id="@+id/btn_read_terms"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Read Terms / قراءة الشروط"
+        android:textColor="#3B82F6"
+        android:textStyle="bold"
+        android:padding="8dp"
+        android:background="?android:attr/selectableItemBackground"
+        android:layout_marginBottom="8dp"/>
+
+    <ScrollView
+        android:id="@+id/scroll_terms"
+        android:layout_width="match_parent"
+        android:layout_height="200dp"
+        android:visibility="gone"
+        android:layout_marginBottom="16dp">
+        <TextView
+            android:id="@+id/tv_full_terms"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="جاري تحميل الشروط..."
+            android:textColor="#333333"
+            android:textSize="14sp"/>
+    </ScrollView>
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="24dp"
+        app:boxBackgroundColor="#FFFFFF"
+        android:hint="الاسم الكامل / Full Name">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/et_name"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="textPersonName"
+            android:textColor="#000000" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btn_accept"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:text="Accept / موافق"
+        android:textColor="#FFFFFF"
+        android:textSize="18sp"
+        app:backgroundTint="#3B82F6"
+        app:cornerRadius="8dp" />
+
+</LinearLayout>

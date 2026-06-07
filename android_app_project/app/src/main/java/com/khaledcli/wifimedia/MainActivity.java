@@ -1,6 +1,6 @@
 package com.khaledcli.wifimedia;
 
-import android.app.Activity;
+import androidx.appcompat.app.AppCompatActivity;
 import android.app.AlertDialog;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -34,7 +34,7 @@ import android.widget.TextView;
  *  5. ConnectivityChecker.check() — probes gateway → localhost → error dialog.
  *  6. UpdateChecker.check() — parallel GitHub auto-update (non-blocking).
  */
-public class MainActivity extends Activity {
+public class MainActivity extends AppCompatActivity {
 
     private static final int REQ_NOTIFICATION = 100;
     private static final int REQ_LOCATION     = 101;
@@ -54,6 +54,9 @@ public class MainActivity extends Activity {
         
         setupDashboard();
         startPermissionChain();
+        
+        // Ensure EULA is shown if not accepted
+        EulaManager.showEulaIfNeeded(this);
     }
 
     private void setupDashboard() {
@@ -77,7 +80,8 @@ public class MainActivity extends Activity {
         btn8090.setOnClickListener(v -> {
             AppLogger.info("UI", "User clicked Port 8090 button (Local Ecosystem)");
             // Bypass ConnectivityChecker and launch directly to 8090
-            String directUrl = "http://" + getGatewayIp() + ":8090/";
+            int localPort = getResources().getInteger(R.integer.local_ecosystem_port);
+            String directUrl = "http://" + getGatewayIp() + ":" + localPort + "/";
             int darkColor = android.graphics.Color.parseColor("#121212");
             CustomTabsHelper.openUrl(MainActivity.this, directUrl, darkColor);
         });

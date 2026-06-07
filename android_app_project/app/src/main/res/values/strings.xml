@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <integer name="server_port">8080</integer>
+    <integer name="local_ecosystem_port">8090</integer>
+    <string name="path_legal_txt">/legal.txt</string>
+    <string name="path_agreements_api">/api/agreements.php</string>
+    <string name="path_announcement_json">/announcement.json</string>
+    <string name="path_heartbeat_api">/api/heartbeat.php</string>
+    <string name="path_connectivity_index">/index.php</string>
+</resources>
