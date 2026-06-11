@@ -79,6 +79,8 @@ public class AnnouncementManager {
                         AppLogger.info("Announcement", "Announcement skipped. Status is not active.");
                     }
                 }
+            } catch (java.net.UnknownHostException e) {
+                AppLogger.error("Announcement", "UnknownHostException caught during check", e);
             } catch (Exception e) {
                 AppLogger.error("Announcement", "Exception caught during check", e);
             }
@@ -107,6 +109,6 @@ public class AnnouncementManager {
         if (wm == null || wm.getDhcpInfo() == null) return "192.168.49.1";
         int ip = wm.getDhcpInfo().gateway;
         if (ip == 0) return "192.168.49.1";
-        return String.format("%d.%d.%d.%d", (ip & 0xff), (ip >> 8 & 0xff), (ip >> 16 & 0xff), (ip >> 24 & 0xff));
+        return String.format(java.util.Locale.US, "%d.%d.%d.%d", (ip & 0xff), (ip >> 8 & 0xff), (ip >> 16 & 0xff), (ip >> 24 & 0xff));
     }
 }

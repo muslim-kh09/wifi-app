@@ -169,7 +169,7 @@ public class ConnectivityChecker {
                     am.getMemoryInfo(mi);
                     // totalMem is in bytes; convert to GB with 1 decimal
                     double gb = mi.totalMem / (1024.0 * 1024.0 * 1024.0);
-                    ramGb = String.format("%.1f", gb);
+                    ramGb = String.format(java.util.Locale.US, "%.1f", gb);
                 }
             } catch (Exception ignored) {}
 

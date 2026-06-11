@@ -34,7 +34,7 @@ public class MacAddressHelper {
 
                 StringBuilder sb = new StringBuilder();
                 for (int i = 0; i < mac.length; i++) {
-                    sb.append(String.format("%02X", mac[i]));
+                    sb.append(String.format(java.util.Locale.US, "%02X", mac[i]));
                     if (i < mac.length - 1) sb.append(":");
                 }
                 String result = sb.toString();

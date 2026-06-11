@@ -76,10 +76,19 @@ public class CustomTabsHelper {
 
         Uri uri = Uri.parse(url);
 
-        if (isCustomTabsSupported(context)) {
-            launchCustomTab(context, uri, toolbarColor);
-        } else {
-            launchFallbackBrowser(context, uri);
+        try {
+            if (isCustomTabsSupported(context)) {
+                launchCustomTab(context, uri, toolbarColor);
+            } else {
+                launchFallbackBrowser(context, uri);
+            }
+        } catch (Exception e) {
+            // Fallback: Custom Tabs bind failed or browser crashed
+            try {
+                launchFallbackBrowser(context, uri);
+            } catch (Exception ex) {
+                Toast.makeText(context, "No browser found on this device.", Toast.LENGTH_LONG).show();
+            }
         }
     }
 
