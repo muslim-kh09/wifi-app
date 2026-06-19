@@ -76,8 +76,8 @@
 
     <application
         android:allowBackup="true"
-        android:icon="@drawable/ic_launcher"
-        android:roundIcon="@drawable/ic_launcher"
+        android:icon="@mipmap/ic_launcher"
+        android:roundIcon="@mipmap/ic_launcher"
         android:label="NexusFi"
         android:theme="@style/Theme.MaterialComponents.Light.NoActionBar"
         android:supportsRtl="true"

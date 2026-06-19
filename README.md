@@ -9,8 +9,8 @@
   <a href="#"><img src="https://img.shields.io/badge/Build-Passing-brightgreen.svg?style=for-the-badge" alt="Build: Passing"></a>
   <a href="#"><img src="https://img.shields.io/badge/Version-3.0.0-orange.svg?style=for-the-badge" alt="Version: 3.0.0"></a>
   <a href="#"><img src="https://img.shields.io/badge/Platform-Android%20%7C%20Termux-lightgrey.svg?style=for-the-badge" alt="Platform: Android/Termux"></a>
-  <a href="#"><img src="https://img.shields.io/github/stars/your-username/nexusfi?style=for-the-badge&color=yellow" alt="Stars"></a>
-  <a href="#"><img src="https://img.shields.io/github/forks/your-username/nexusfi?style=for-the-badge&color=lightblue" alt="Forks"></a>
+  <a href="https://github.com/muslim-k09/NexusFi/stargazers"><img src="https://img.shields.io/github/stars/muslim-k09/NexusFi?style=for-the-badge&color=yellow" alt="Stars"></a>
+  <a href="https://github.com/muslim-k09/NexusFi/network/members"><img src="https://img.shields.io/github/forks/muslim-k09/NexusFi?style=for-the-badge&color=lightblue" alt="Forks"></a>
 </div>
 
 > A self-contained, 3-tier telecommunications and intranet platform engineered to run natively on a rooted Android device under Termux. The system provisions a fully managed Wi-Fi hotspot, a captive portal with a gamification layer, an offline intranet (VOD, social network, file library, HTML5 games), and a native Android companion application — with zero dependency on cloud infrastructure.
