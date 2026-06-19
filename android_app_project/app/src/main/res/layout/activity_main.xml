@@ -1,104 +1,114 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout
+<androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#0B0B0B">
 
-    <!-- Independent Settings Icon (Top-Right) -->
+    <!-- Settings Icon (Top-Right) -->
     <ImageButton
         android:id="@+id/btn_debug_console"
         android:layout_width="40dp"
         android:layout_height="40dp"
-        android:layout_alignParentEnd="true"
-        android:layout_alignParentTop="true"
-        android:layout_margin="24dp"
+        android:layout_marginEnd="24dp"
+        android:layout_marginTop="24dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
         android:background="?android:attr/selectableItemBackgroundBorderless"
         android:src="@android:drawable/ic_menu_manage"
-        android:tint="#666666"
+        app:tint="#666666"
         android:contentDescription="سجل النظام" />
 
-    <!-- True Vertical Centered Container -->
-    <LinearLayout
-        android:layout_width="match_parent"
+    <!-- 15% Top Guideline for Hero Section -->
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline_top"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_centerInParent="true"
-        android:orientation="vertical"
-        android:gravity="center_horizontal"
-        android:paddingTop="16dp"
-        android:paddingBottom="16dp">
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.15" />
 
-        <!-- Hero Logo Centerpiece -->
-        <ImageView
-            android:layout_width="160dp"
-            android:layout_height="160dp"
-            android:src="@mipmap/ic_launcher"
-            android:layout_gravity="center_horizontal" />
+    <!-- Hero Logo -->
+    <ImageView
+        android:id="@+id/iv_logo"
+        android:layout_width="150dp"
+        android:layout_height="150dp"
+        android:src="@mipmap/ic_launcher"
+        app:layout_constraintTop_toBottomOf="@id/guideline_top"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
 
-        <!-- Title -->
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="NexusFi"
-            android:fontFamily="sans-serif-light"
-            android:letterSpacing="0.1"
-            android:textColor="#FFFFFF"
-            android:textSize="24sp"
-            android:layout_marginTop="32dp"
-            android:layout_marginBottom="8dp" />
+    <!-- NexusFi Title -->
+    <TextView
+        android:id="@+id/tv_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="NexusFi"
+        android:fontFamily="sans-serif-thin"
+        android:letterSpacing="0.1"
+        android:textColor="#FFFFFF"
+        android:textSize="36sp"
+        android:layout_marginTop="16dp"
+        app:layout_constraintTop_toBottomOf="@id/iv_logo"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
 
-        <!-- Status Text -->
-        <TextView
-            android:id="@+id/tv_network_status"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="حالة الشبكة: متصل بالبوابة المحلية"
-            android:textColor="#8E8E93"
-            android:textSize="14sp" />
+    <!-- Status Text -->
+    <TextView
+        android:id="@+id/tv_network_status"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="حالة الشبكة: متصل بالبوابة المحلية"
+        android:textColor="#8E8E93"
+        android:textSize="14sp"
+        android:layout_marginTop="8dp"
+        app:layout_constraintTop_toBottomOf="@id/tv_title"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
 
-        <!-- Button 1 (Port 8080) -->
-        <Button
-            android:id="@+id/btn_internet_portal"
-            android:layout_width="match_parent"
-            android:layout_height="64dp"
-            android:layout_marginHorizontal="32dp"
-            android:layout_marginTop="32dp"
-            android:layout_marginBottom="16dp"
-            android:text="تسجيل الدخول / فتح الإنترنت"
-            android:textColor="#0B0B0B"
-            android:textSize="18sp"
-            android:gravity="center"
-            android:backgroundTint="#FFFFFF"
-            app:cornerRadius="8dp"
-            android:elevation="2dp" />
+    <!-- Primary Button (Bottom Anchored) -->
+    <Button
+        android:id="@+id/btn_internet_portal"
+        android:layout_width="0dp"
+        android:layout_height="60dp"
+        android:layout_marginStart="32dp"
+        android:layout_marginEnd="32dp"
+        android:layout_marginBottom="64dp"
+        android:text="تسجيل الدخول / فتح الإنترنت"
+        android:textColor="#0B0B0B"
+        android:textStyle="bold"
+        android:textSize="16sp"
+        android:backgroundTint="#FFFFFF"
+        app:cornerRadius="50dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
 
-        <!-- Button 2 (Port 8090) -->
-        <Button
-            android:id="@+id/btn_local_ecosystem"
-            android:layout_width="match_parent"
-            android:layout_height="64dp"
-            android:layout_marginHorizontal="32dp"
-            android:text="الشبكة المحلية والسوشيال المجاني"
-            android:textColor="#FFFFFF"
-            android:textSize="18sp"
-            android:gravity="center"
-            android:backgroundTint="#1C1C1E"
-            app:cornerRadius="8dp"
-            android:elevation="2dp" />
+    <!-- Secondary Text Button -->
+    <Button
+        android:id="@+id/btn_local_ecosystem"
+        style="@style/Widget.MaterialComponents.Button.TextButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text="الشبكة المحلية والسوشيال المجاني"
+        android:textColor="#D1D1D6"
+        android:textSize="14sp"
+        app:layout_constraintTop_toBottomOf="@id/btn_internet_portal"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
 
-    </LinearLayout>
-
-    <!-- Version string at bottom -->
+    <!-- Version Footer -->
     <TextView
         android:id="@+id/tv_version"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true"
         android:layout_marginBottom="16dp"
         android:text="الإصدار 3.0.0"
         android:textColor="#444446"
-        android:textSize="12sp" />
+        android:textSize="12sp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
 
-</RelativeLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>
