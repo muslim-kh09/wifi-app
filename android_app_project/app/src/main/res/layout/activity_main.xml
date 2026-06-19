@@ -53,6 +53,7 @@
             android:layout_height="120dp"
             android:src="@mipmap/ic_launcher"
             android:layout_gravity="center_horizontal"
+            android:layout_marginTop="64dp"
             android:layout_marginBottom="16dp"/>
 
         <TextView
@@ -60,10 +61,10 @@
             android:layout_height="wrap_content"
             android:text="NexusFi"
             android:fontFamily="sans-serif-light"
-            android:letterSpacing="0.05"
+            android:letterSpacing="0.1"
             android:textColor="#FFFFFF"
-            android:textSize="28sp"
-            android:textStyle="bold"
+            android:textSize="24sp"
+            android:layout_marginTop="32dp"
             android:layout_marginBottom="8dp"/>
 
         <TextView
@@ -72,7 +73,8 @@
             android:layout_height="wrap_content"
             android:text="حالة الشبكة: متصل بالبوابة المحلية"
             android:textColor="#8E8E93"
-            android:textSize="14sp"/>
+            android:textSize="14sp"
+            android:layout_marginBottom="48dp"/>
     </LinearLayout>
 
     <!-- Dual-Action Buttons -->
@@ -81,7 +83,8 @@
         android:layout_height="wrap_content"
         android:layout_below="@id/welcome_section"
         android:orientation="vertical"
-        android:paddingHorizontal="24dp"
+        android:paddingStart="24dp"
+        android:paddingEnd="24dp"
         android:paddingTop="16dp"
         android:gravity="center">
 
@@ -93,7 +96,7 @@
             android:text="تسجيل الدخول / فتح الإنترنت"
             android:textColor="#0B0B0B"
             android:textSize="18sp"
-            android:textStyle="bold"
+            android:gravity="center"
             android:backgroundTint="#FFFFFF"
             app:cornerRadius="8dp"
             android:layout_marginBottom="16dp"
@@ -107,6 +110,7 @@
             android:text="الشبكة المحلية والسوشيال المجاني"
             android:textColor="#FFFFFF"
             android:textSize="18sp"
+            android:gravity="center"
             android:backgroundTint="#1C1C1E"
             app:cornerRadius="8dp"
             android:elevation="2dp" />
