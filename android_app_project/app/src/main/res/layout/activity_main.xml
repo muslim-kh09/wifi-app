@@ -2,6 +2,7 @@
 <androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#0B0B0B">
@@ -66,35 +67,37 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
-    <!-- Primary Button (Bottom Anchored) -->
+    <!-- Primary Button (Stacked above secondary) -->
     <Button
         android:id="@+id/btn_internet_portal"
         android:layout_width="0dp"
         android:layout_height="60dp"
         android:layout_marginStart="32dp"
         android:layout_marginEnd="32dp"
-        android:layout_marginBottom="64dp"
+        android:layout_marginBottom="16dp"
         android:text="تسجيل الدخول / فتح الإنترنت"
         android:textColor="#0B0B0B"
         android:textStyle="bold"
         android:textSize="16sp"
         android:backgroundTint="#FFFFFF"
         app:cornerRadius="50dp"
-        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/btn_local_ecosystem"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
-    <!-- Secondary Text Button -->
+    <!-- Secondary Text Button (Stacked above version) -->
     <Button
         android:id="@+id/btn_local_ecosystem"
-        style="@style/Widget.MaterialComponents.Button.TextButton"
+        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
+        android:layout_marginBottom="24dp"
         android:text="الشبكة المحلية والسوشيال المجاني"
         android:textColor="#D1D1D6"
         android:textSize="14sp"
-        app:layout_constraintTop_toBottomOf="@id/btn_internet_portal"
+        app:strokeColor="#48484A"
+        app:strokeWidth="1dp"
+        app:layout_constraintBottom_toTopOf="@id/tv_version"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
@@ -104,7 +107,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="16dp"
-        android:text="الإصدار 3.0.0"
+        tools:text="الإصدار 3.0.0"
         android:textColor="#444446"
         android:textSize="12sp"
         app:layout_constraintBottom_toBottomOf="parent"
