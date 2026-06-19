@@ -12,30 +12,5 @@
         <!-- Nuke the native toolbar completely -->
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
-        <item name="alertDialogTheme">@style/Theme.NexusFi.AlertDialog</item>
-        <item name="materialAlertDialogTheme">@style/Theme.NexusFi.AlertDialog</item>
-    </style>
-
-    <style name="Theme.NexusFi.AlertDialog" parent="Theme.MaterialComponents.DayNight.Dialog.Alert">
-        <item name="android:windowBackground">@android:color/transparent</item>
-        <item name="backgroundTint">#0B0B0B</item>
-        <item name="android:textColorPrimary">#FFFFFF</item>
-        <item name="android:textColorSecondary">#8E8E93</item>
-        <item name="shapeAppearanceOverlay">@style/ShapeAppearance.NexusFi.Dialog</item>
-        <item name="buttonBarPositiveButtonStyle">@style/Widget.NexusFi.DialogButton.Positive</item>
-        <item name="buttonBarNegativeButtonStyle">@style/Widget.NexusFi.DialogButton.Negative</item>
-    </style>
-
-    <style name="ShapeAppearance.NexusFi.Dialog" parent="ShapeAppearance.MaterialComponents.SmallComponent">
-        <item name="cornerSize">16dp</item>
-    </style>
-
-    <style name="Widget.NexusFi.DialogButton.Positive" parent="Widget.MaterialComponents.Button.TextButton">
-        <item name="android:textColor">#FFFFFF</item>
-        <item name="android:textStyle">bold</item>
-    </style>
-
-    <style name="Widget.NexusFi.DialogButton.Negative" parent="Widget.MaterialComponents.Button.TextButton">
-        <item name="android:textColor">#666666</item>
     </style>
 </resources>
