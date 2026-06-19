@@ -1,16 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#121212">
+    android:background="#0B0B0B">
 
     <!-- Top Action Bar -->
     <RelativeLayout
         android:id="@+id/top_bar"
         android:layout_width="match_parent"
         android:layout_height="60dp"
-        android:background="#1E1E1E"
+        android:background="#0B0B0B"
         android:elevation="4dp"
         android:paddingHorizontal="16dp">
 
@@ -18,7 +19,9 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerVertical="true"
-            android:text="الشبكة المحلية"
+            android:text="NexusFi"
+            android:fontFamily="sans-serif"
+            android:letterSpacing="0.05"
             android:textColor="#FFFFFF"
             android:textSize="20sp"
             android:textStyle="bold" />
@@ -46,18 +49,20 @@
         android:padding="32dp">
 
         <ImageView
-            android:layout_width="80dp"
-            android:layout_height="80dp"
-            android:src="@android:drawable/ic_dialog_info"
-            android:tint="#3B82F6"
+            android:layout_width="120dp"
+            android:layout_height="120dp"
+            android:src="@mipmap/ic_launcher"
+            android:layout_gravity="center_horizontal"
             android:layout_marginBottom="16dp"/>
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="أهلاً بك في بوابة الشبكة"
+            android:text="NexusFi"
+            android:fontFamily="sans-serif-light"
+            android:letterSpacing="0.05"
             android:textColor="#FFFFFF"
-            android:textSize="22sp"
+            android:textSize="28sp"
             android:textStyle="bold"
             android:layout_marginBottom="8dp"/>
 
@@ -66,7 +71,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="حالة الشبكة: متصل بالبوابة المحلية"
-            android:textColor="#A0A0A0"
+            android:textColor="#8E8E93"
             android:textSize="14sp"/>
     </LinearLayout>
 
@@ -86,10 +91,11 @@
             android:layout_width="match_parent"
             android:layout_height="64dp"
             android:text="تسجيل الدخول / فتح الإنترنت"
-            android:textColor="#FFFFFF"
+            android:textColor="#0B0B0B"
             android:textSize="18sp"
             android:textStyle="bold"
-            android:backgroundTint="#3B82F6"
+            android:backgroundTint="#FFFFFF"
+            app:cornerRadius="8dp"
             android:layout_marginBottom="16dp"
             android:elevation="2dp" />
 
@@ -101,7 +107,8 @@
             android:text="الشبكة المحلية والسوشيال المجاني"
             android:textColor="#FFFFFF"
             android:textSize="18sp"
-            android:backgroundTint="#2D2D2D"
+            android:backgroundTint="#1C1C1E"
+            app:cornerRadius="8dp"
             android:elevation="2dp" />
 
     </LinearLayout>
@@ -114,8 +121,8 @@
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"
         android:layout_marginBottom="16dp"
-        android:text="الإصدار 1.0.0"
-        android:textColor="#555555"
+        android:text="الإصدار 3.0.0"
+        android:textColor="#444446"
         android:textSize="12sp"/>
 
 </RelativeLayout>
