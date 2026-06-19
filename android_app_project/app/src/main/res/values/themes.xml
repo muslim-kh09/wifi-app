@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <style name="Theme.NexusFi" parent="Theme.MaterialComponents.Light.NoActionBar">
+    <style name="Theme.NexusFi" parent="Theme.MaterialComponents.DayNight.NoActionBar">
         <!-- Primary brand color. -->
         <item name="colorPrimary">#0B0B0B</item>
         <item name="colorPrimaryDark">#0B0B0B</item>
@@ -9,5 +9,8 @@
         <item name="android:statusBarColor">#0B0B0B</item>
         <!-- Ensure navigation bar matches dark aesthetic -->
         <item name="android:navigationBarColor">#0B0B0B</item>
+        <!-- Nuke the native toolbar completely -->
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
     </style>
 </resources>
