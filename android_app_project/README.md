@@ -1,12 +1,11 @@
 <div align="center">
-  <img src="assets/banner.png" alt="NexusFi Banner" width="100%">
+  <img src="banner.png" alt="NexusFi Banner" width="100%">
 </div>
 
 # NexusFi (Micro-ISP & Local Cloud Ecosystem)
 ### Production-Grade Hotspot Infrastructure for Rooted Android / Termux
 
 <div align="center">
-  <a href="https://github.com/your-username/nexusfi/blob/main/legal.txt"><img src="https://img.shields.io/badge/License-MIT-blue.svg?style=for-the-badge" alt="License: MIT"></a>
   <a href="#"><img src="https://img.shields.io/badge/Build-Passing-brightgreen.svg?style=for-the-badge" alt="Build: Passing"></a>
   <a href="#"><img src="https://img.shields.io/badge/Version-3.0.0-orange.svg?style=for-the-badge" alt="Version: 3.0.0"></a>
   <a href="#"><img src="https://img.shields.io/badge/Platform-Android%20%7C%20Termux-lightgrey.svg?style=for-the-badge" alt="Platform: Android/Termux"></a>
@@ -412,28 +411,16 @@ A background shell loop polls GitHub Releases every 24 hours for a new `app-rele
 > _Replace placeholder paths with actual screenshot files placed in `assets/screenshots/`._
 
 ### Captive Portal — User Login
-![Captive Portal](assets/screenshots/captive_portal.png)
 
 ### User Status & Gamification Dashboard
-![User Status & Gamification](assets/screenshots/user_status_gamification.png)
 
 ### Admin Dashboard — Hardware Telemetry
-![Admin Dashboard Hardware Telemetry](assets/screenshots/admin_hardware_telemetry.png)
 
 ### Local Social Network
-![Local Social Network](assets/screenshots/local_social_network.png)
 
 ### Financial Reports & Revenue Analytics
-![Financial Reports](assets/screenshots/financial_reports.png)
 
 ### Local Cloud Media Hub
-![Local Cloud Media Hub](assets/screenshots/local_cloud_media_hub.png)
-
----
-
-## License
-
-See [`legal.txt`](legal.txt) for full terms and conditions.
 
 ---
 
