@@ -32,8 +32,8 @@
     <!-- Hero Logo -->
     <ImageView
         android:id="@+id/iv_logo"
-        android:layout_width="150dp"
-        android:layout_height="150dp"
+        android:layout_width="200dp"
+        android:layout_height="200dp"
         android:src="@mipmap/ic_launcher"
         app:layout_constraintTop_toBottomOf="@id/guideline_top"
         app:layout_constraintStart_toStartOf="parent"
@@ -48,22 +48,9 @@
         android:fontFamily="sans-serif-thin"
         android:letterSpacing="0.1"
         android:textColor="#FFFFFF"
-        android:textSize="36sp"
+        android:textSize="42sp"
         android:layout_marginTop="16dp"
         app:layout_constraintTop_toBottomOf="@id/iv_logo"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
-
-    <!-- Status Text -->
-    <TextView
-        android:id="@+id/tv_network_status"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="حالة الشبكة: متصل بالبوابة المحلية"
-        android:textColor="#8E8E93"
-        android:textSize="14sp"
-        android:layout_marginTop="8dp"
-        app:layout_constraintTop_toBottomOf="@id/tv_title"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
@@ -85,18 +72,19 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
-    <!-- Secondary Text Button (Stacked above version) -->
+    <!-- Secondary Button (Stacked above version) -->
     <Button
         android:id="@+id/btn_local_ecosystem"
-        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="0dp"
+        android:layout_height="60dp"
+        android:layout_marginStart="32dp"
+        android:layout_marginEnd="32dp"
         android:layout_marginBottom="24dp"
         android:text="الشبكة المحلية والسوشيال المجاني"
-        android:textColor="#D1D1D6"
+        android:textColor="#FFFFFF"
         android:textSize="14sp"
-        app:strokeColor="#48484A"
-        app:strokeWidth="1dp"
+        android:backgroundTint="#1C1C1E"
+        app:cornerRadius="50dp"
         app:layout_constraintBottom_toTopOf="@id/tv_version"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
