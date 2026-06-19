@@ -100,7 +100,7 @@
         <activity
             android:name=".LogViewerActivity"
             android:exported="false"
-            android:theme="@android:style/Theme.NoTitleBar" />
+            android:theme="@style/Theme.NexusFi" />
 
         <provider
             android:name="androidx.core.content.FileProvider"
