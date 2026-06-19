@@ -78,7 +78,7 @@
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher"
         android:roundIcon="@drawable/ic_launcher"
-        android:label="Khaled-CLI"
+        android:label="NexusFi"
         android:theme="@style/Theme.MaterialComponents.Light.NoActionBar"
         android:supportsRtl="true"
         android:usesCleartextTraffic="true">
