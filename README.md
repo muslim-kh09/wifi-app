@@ -11,7 +11,7 @@
   <a href="#"><img src="https://img.shields.io/badge/Platform-Android%20%7C%20Termux-lightgrey.svg?style=for-the-badge" alt="Platform: Android/Termux"></a>
 </div>
 
-> A self-contained, 3-tier telecommunications and intranet platform engineered to run natively on a rooted Android device under Termux. The system provisions a fully managed Wi-Fi hotspot, a captive portal with a gamification layer, an offline intranet (VOD, social network, file library, HTML5 games), and a native Android companion application — with zero dependency on cloud infrastructure.
+> A self-contained, 3-tier telecommunications and intranet platform engineered to run natively on a rooted Android device under Termux. The system provisions a fully managed Wi-Fi hotspot, a captive portal with a gamification layer, an offline intranet (VOD, social network, file library), and a native Android companion application — with zero dependency on cloud infrastructure.
 
 ---
 
@@ -72,7 +72,7 @@ The system is architected in three discrete but tightly coupled tiers, each with
 │  │ • Media Hub (VOD)│   │             │                               │ │
 │  │ • Social Network │   │  ┌──────────▼───────────────────────────┐  │ │
 │  │ • File Library   │   │  │         API LAYER  (/api/)           │  │ │
-│  │ • HTML5 Games    │   │  │  heartbeat.php │ payments.php        │  │ │
+│  │                  │   │  │  heartbeat.php │ payments.php        │  │ │
 │  │ • Admin UI       │   │  │  users.php     │ analytics.php       │  │ │
 │  │ • WebSocket      │   │  │  vouchers.php  │ system.php          │  │ │
 │  │   Telemetry      │   │  └──────────────────────────────────────┘  │ │
@@ -406,19 +406,33 @@ A background shell loop polls GitHub Releases every 24 hours for a new `app-rele
 
 ## 8. Screenshots Gallery
 
-> _Replace placeholder paths with actual screenshot files placed in `assets/screenshots/`._
-
-### Captive Portal — User Login
-
-### User Status & Gamification Dashboard
-
-### Admin Dashboard — Hardware Telemetry
-
-### Local Social Network
-
-### Financial Reports & Revenue Analytics
-
-### Local Cloud Media Hub
+<div align="center">
+  <table>
+    <tr>
+      <td align="center"><b>Admin Login</b><br><img src="adminLogin.png" width="400"></td>
+      <td align="center"><b>Overview Dashboard</b><br><img src="overview.png" width="400"></td>
+    </tr>
+    <tr>
+      <td align="center"><b>Live Monitoring</b><br><img src="live_monitoring.png" width="400"></td>
+      <td align="center"><b>Financial Report</b><br><img src="financial_report.png" width="400"></td>
+    </tr>
+    <tr>
+      <td align="center"><b>Customers</b><br><img src="customers.png" width="400"></td>
+      <td align="center"><b>Vouchers</b><br><img src="vouchers.png" width="400"></td>
+    </tr>
+    <tr>
+      <td align="center"><b>User Profile</b><br><img src="user_profile.png" width="400"></td>
+      <td align="center"><b>Secondary Profile</b><br><img src="user_profile2.png" width="400"></td>
+    </tr>
+    <tr>
+      <td align="center"><b>Maintenance Mode</b><br><img src="maintenance.png" width="400"></td>
+      <td align="center"><b>System Settings</b><br><img src="setting.png" width="400"></td>
+    </tr>
+    <tr>
+      <td align="center" colspan="2"><b>Secondary Overview</b><br><img src="overview_2.png" width="400"></td>
+    </tr>
+  </table>
+</div>
 
 ---
 
